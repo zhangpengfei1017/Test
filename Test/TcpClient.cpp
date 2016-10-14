@@ -19,6 +19,14 @@ struct PlayerInfo_C08 {
 	int posz;
 };
 
+struct PlayerAttack_C09 {
+	int posx;
+	int posy;
+	int posz;
+	int skill;
+	int direction;
+};
+
 //
 // server struct below
 struct HeadPackage_S00 {
@@ -64,6 +72,7 @@ struct GameStartMonsterInfo_S06 {
 };
 struct GameInfoHead_S08 {
 	int playernum;
+	int monsternum;
 };
 struct GamePlayerInfo_S08 {
 	int UID;
@@ -82,8 +91,6 @@ struct GameMonsterInfo_S08 {
 	int posz;
 	int maxhp;
 	int curhp;
-	int maxmp;
-	int curmp;
 };
 void TcpClient::CheckMsg(char Msg[]) {
 	HeadPackage_S00 hp;
@@ -188,11 +195,11 @@ void TcpClient::CheckMsg(char Msg[]) {
 			memcpy(&gspi, Msg + BufPos, sizeof(gspi));
 			BufPos += sizeof(gspi);
 			if (gspi.UID == UID) {
-				GameObject*p = new GameObject(13, "Player", "", 60, 0, 20,75,75, true);
+				GameObject*p = new GameObject(15, "Player", "", 60, 0, 20,43,75, true);
 				mRoom->Players.push_back(p);
 			}
 			else {
-				GameObject*p = new GameObject(13, std::to_string(gspi.UID), "", 60, 0, 20,75,75, true);
+				GameObject*p = new GameObject(15, std::to_string(gspi.UID), "", 60, 0, 20,43,75, true);
 				mRoom->Players.push_back(p);
 			}
 			
@@ -210,7 +217,7 @@ void TcpClient::CheckMsg(char Msg[]) {
 				memset(&gsmi, 0, sizeof(gsmi));
 				memcpy(&gsmi, Msg + BufPos, sizeof(gsmi));
 				//save in room info
-				GameObject* mon = new GameObject(gsmi.type, to_string(gsmi.MonID), "Monster",gsmi.PosX, gsmi.PosY, gsmi.PosZ,75,75,true);
+				GameObject* mon = new GameObject(gsmi.type, to_string(gsmi.MonID), "Monster",gsmi.PosX, gsmi.PosY, gsmi.PosZ,43,75,true);
 				mon->maxHp = gsmi.maxHp;
 				mon->curHp = gsmi.curHp;
 				mon->attack = gsmi.attack;
@@ -244,6 +251,23 @@ void TcpClient::CheckMsg(char Msg[]) {
 				}
 				
 			}
+		}
+		for (int i = 0; i < gih.monsternum; i++) {
+			GameMonsterInfo_S08 gmi;
+			memset(&gmi, 0, sizeof(gmi));
+			memcpy(&gmi, Msg + BufPos, sizeof(gmi));
+			BufPos += sizeof(gmi);
+			for (int j = 0; j < mRoom->AllDungeons[mRoom->curDungeon].Monsters.size(); j++) {
+				GameObject* m = mRoom->AllDungeons[mRoom->curDungeon].Monsters[j];
+				if (m->name == to_string(gmi.ID)) {
+					m->MoveTo(gmi.posx, gmi.posy, gmi.posz);
+					m->curHp = gmi.curhp;
+					m->maxHp = gmi.maxhp;	
+					if (gmi.ID == 0) {
+						((UIProgressBar*)GameController::AllLevels[9]->UIInLevel[1])->SetValue(gmi.curhp * 100 / gmi.maxhp);
+					}
+				}
+			}			
 		}
 		SendMsg(1, 0, nullptr);
 		break;
@@ -289,6 +313,19 @@ void TcpClient::SendMsg(int CmdId,int MsgNum, char MsgChar[]) {
 	memcpy(bufSend + BufPos, &pi, sizeof(pi));
 	BufPos += sizeof(pi);
 	break; }
+	case 9://attack
+	{
+		PlayerAttack_C09 pa;
+		GameObject*p = GameObject::FindWithName("Player");
+		pa.posx = p->PosX;
+		pa.posy = p->PosY;
+		pa.posz = p->PosZ;
+		pa.direction = p->direction;
+		pa.skill = 0;
+		memcpy(bufSend + BufPos, &pa, sizeof(pa));
+		BufPos += sizeof(pa);
+		break;
+	}
 	default:
 		break;
 	}

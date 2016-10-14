@@ -120,9 +120,10 @@ void GameController::LevelInit() {
 	lv9->BackgroundId = 9;
 	lv9->LevelLength = 720;
 	lv9->ID = 9;
-	UILabel* frame = new UILabel("frame", 20, 20, "fuckyou!!!!!!!!!!!!");
+	UILabel* frame = new UILabel("frame", 20, 20, "");
+	UIProgressBar* mon1hp = new UIProgressBar("Hp", 40, 20, 100, 10, '7');
 	lv9->UIInLevel.push_back(frame);
-	
+	lv9->UIInLevel.push_back(mon1hp);	
 }
 void GameController::LoadLevel(int lvid) {
 	curLevel = AllLevels[lvid];

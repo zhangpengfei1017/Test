@@ -17,7 +17,7 @@ void ScreenGenerator::init() {
 	IsFirstFrame = true;
 	nextASIlayer = 0;
 	CamPosX = 0;
-	ScreenGenerator::LoadAssets(15);
+	ScreenGenerator::LoadAssets(16);
 }
 void ScreenGenerator::LoadAssets(int num) {
 	allasset = new Picture[num];
@@ -78,7 +78,7 @@ CHAR_INFO* ScreenGenerator::NextScreen() {
 		return cBuffer;
 	}//
 	//
-
+	Level* lv = GameController::curLevel;
 	for (int layer = 0; layer < 1; layer++) {
 		//遍历currentActive的sprite，计算其绘制矩形，循环绘制/
 		//计算绘制矩形
@@ -88,7 +88,7 @@ CHAR_INFO* ScreenGenerator::NextScreen() {
 		int endy = 160;
 		for (int l = beginy; l < endy; l++) {
 			for (int r = beginx; r < endx; r++) {
-				FullScreen[(l) * 360 + r] = allasset[GameController::curLevel->BackgroundId].data[(l - beginy)*GameController::curLevel->LevelLength + (r - beginx) + CamPosX];
+				FullScreen[(l) * 360 + r] = allasset[lv->BackgroundId].data[(l - beginy)*lv->LevelLength + (r - beginx) + CamPosX];
 			}
 		}
 	}
@@ -118,45 +118,57 @@ CHAR_INFO* ScreenGenerator::NextScreen() {
 	//		}
 	//	}
 	//}
-	for (int i = 0; i < GameController::curLevel->GameObjectInLevel.size(); i++) {
-		int Wx = GameController::curLevel->GameObjectInLevel[i]->PosX;
-		int Wy = GameController::curLevel->GameObjectInLevel[i]->PosY;
-		int Wz = GameController::curLevel->GameObjectInLevel[i]->PosZ;
-		int GOWidth = GameController::curLevel->GameObjectInLevel[i]->Width;
-		int GOHeight = GameController::curLevel->GameObjectInLevel[i]->Height;
+	for (int i = 0; i < lv->GameObjectInLevel.size(); i++) {
+		int Wx = lv->GameObjectInLevel[i]->PosX;
+		int Wy = lv->GameObjectInLevel[i]->PosY;
+		int Wz = lv->GameObjectInLevel[i]->PosZ;
+		int GOWidth = lv->GameObjectInLevel[i]->Width;
+		int GOHeight = lv->GameObjectInLevel[i]->Height;
 		int beginx = WorldPosToScreenPos_X(Wx, CamPosX) - (GOWidth / 2);
 		int beginy = WorldPosToScreenPos_Y(Wy, Wz) - (GOHeight);
 		int endx = (beginx + GOWidth) > 360 ? 360 : (beginx + GOWidth);
 		int endy = (beginy + GOHeight) > 160 ? 160 : (beginy + GOHeight);
 		ofstream outfile("fuckingchar.txt", ios::in | ios::trunc);
 		int count=0;
-		for (int l = beginy; l < endy; l++) {
-			for (int r = beginx; r < endx; r++) {
-				if (r >= 0 &&GameController::curLevel->GameObjectInLevel[i]->amt->imagedata[(l - beginy)*GOWidth + (r - beginx)] != 'T') {
-					FullScreen[(l) * 360 + r] = GameController::curLevel->GameObjectInLevel[i]->amt->imagedata[(l - beginy)*GOWidth + (r - beginx)];
-				}					
+		if (lv->GameObjectInLevel[i]->direction == 1) {
+			for (int l = beginy; l < endy; l++) {
+				for (int r = beginx; r < endx; r++) {
+					if (r >= 0 && lv->GameObjectInLevel[i]->amt->imagedata[(l - beginy)*GOWidth + (r - beginx)] != 'T') {
+						FullScreen[(l) * 360 + r] = lv->GameObjectInLevel[i]->amt->imagedata[(l - beginy)*GOWidth + (r - beginx)];
+					}
+				}
+			}
+		}
+		else {
+			for (int l = beginy; l < endy; l++) {
+				for (int r = beginx; r < endx; r++) {
+					if (r >= 0 && lv->GameObjectInLevel[i]->amt->imagedata[(l - beginy)*GOWidth + (GOWidth - (r - beginx))] != 'T') {
+						FullScreen[(l) * 360 + r] = lv->GameObjectInLevel[i]->amt->imagedata[(l - beginy)*GOWidth + (GOWidth-(r - beginx))];
+					}
+				}
 			}
 		}
 	}
-	GameController::curLevel->UI_mutex.lock();
-	for (int i = 0; i < GameController::curLevel->UIInLevel.size(); i++) {
-		if (!GameController::curLevel->UIInLevel[i]->isActive) {
+	
+	lv->UI_mutex.lock();	
+	for (int i = 0; i < lv->UIInLevel.size(); i++) {
+		if (!lv->UIInLevel[i]->isActive) {
 			continue;
 		}
-		int beginx = GameController::curLevel->UIInLevel[i]->PosX;
-		int beginy = GameController::curLevel->UIInLevel[i]->PosY;
-		int endx = GameController::curLevel->UIInLevel[i]->PosX + GameController::curLevel->UIInLevel[i]->Width;
+		int beginx = lv->UIInLevel[i]->PosX;
+		int beginy = lv->UIInLevel[i]->PosY;
+		int endx = lv->UIInLevel[i]->PosX + lv->UIInLevel[i]->Width;
 		endx = endx > 360 ? 360 : endx;
-		int endy = GameController::curLevel->UIInLevel[i]->PosY + GameController::curLevel->UIInLevel[i]->Height;
+		int endy = lv->UIInLevel[i]->PosY + lv->UIInLevel[i]->Height;
 		endy = endy > 160 ? 160 : endy;
 		for (int l = beginy; l < endy; l++) {
 			for (int r = beginx; r < endx; r++) {
-				if (r >= 0 && GameController::curLevel->UIInLevel[i]->data[(l - beginy)*GameController::curLevel->UIInLevel[i]->Width + (r - beginx)] != 'T')
-					FullScreen[(l) * 360 + r] = GameController::curLevel->UIInLevel[i]->data[(l - beginy)*GameController::curLevel->UIInLevel[i]->Width + (r - beginx)];
+				if (r >= 0 && lv->UIInLevel[i]->data[(l - beginy)*lv->UIInLevel[i]->Width + (r - beginx)] != 'T')
+					FullScreen[(l) * 360 + r] = lv->UIInLevel[i]->data[(l - beginy)*lv->UIInLevel[i]->Width + (r - beginx)];
 			}
 		}
 	}
-	GameController::curLevel->UI_mutex.unlock();
+	lv->UI_mutex.unlock();
 	const static WORD color_map[16] =
 	{
 		NULL,

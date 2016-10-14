@@ -35,8 +35,7 @@ void UILabel::SetText(string t) {
 	data = new char[t.size() * 42];
 	for (int i = 0; i < t.size(); i++) {
 		Text[i] = t[i];
-		char* NextChar = new char[42];
-		NextChar= ScreenGenerator::GetCharData(Text[i]);
+		char* NextChar= ScreenGenerator::GetCharData(Text[i]);
 		int count = 0;
 		for (int l = 0; l < 7; l++) {
 			for (int r = i * 6; r < (i * 6 + 6); r++) {

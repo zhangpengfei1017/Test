@@ -18,10 +18,10 @@ public:
 	int maxMp=500;
 	int curMp=500;
 	int attack;
-	int Direction=1;
 	bool isActive;
 	int minX;
 	int maxX;
+	int direction;
 	string name="";
 	string tag="";
 	int assetid;
@@ -30,7 +30,7 @@ public:
 	int Height;
 	void MoveTo(int x, int y, int z);
 	void MoveBy(int x, int y, int z);
-	void Turn();
+	void Turn(int dir);
 
 
 	//static 

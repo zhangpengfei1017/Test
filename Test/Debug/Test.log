@@ -1,2 +1,4 @@
-﻿  Test.vcxproj -> C:\Users\xiaobei\documents\visual studio 2015\Projects\Test\Debug\Test.exe
+﻿  main.cpp
+c:\users\xiaobei\documents\visual studio 2015\projects\test\test\main.cpp(136): warning C4018: '<': signed/unsigned mismatch
+  Test.vcxproj -> C:\Users\xiaobei\documents\visual studio 2015\Projects\Test\Debug\Test.exe
   Test.vcxproj -> C:\Users\xiaobei\documents\visual studio 2015\Projects\Test\Debug\Test.pdb (Partial PDB)

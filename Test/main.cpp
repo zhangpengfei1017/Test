@@ -26,10 +26,17 @@ COORD coordBufSize = { 720,160 };
 COORD coordBufCoord = { 0,0 };
 SMALL_RECT srctWriteRect = { 0,0,720,160 };
 HANDLE hNewScreenBuffer;
-ofstream outfile("output.txt", ios::in | ios::trunc);
  int LastFrameTime;
 int FramesCount = 0;
 float deltaTime = 0;
+//
+float attackCd=0;
+float skill1Cd=0;
+
+
+
+//
+
 void Start() {
 	ScreenGenerator::init();
 	GameController::LevelInit();
@@ -125,33 +132,14 @@ void Update() {
 			GameController::LoadLevel(0);
 		}
 	}
-	if (GameController::curLevel->ID >= 9) {
-		GameController::curLevel->UI_mutex.lock();
-		((UILabel*)GameController::AllLevels[9]->UIInLevel[0])->SetText(std::to_string(Time::FPS)+"  "+std::to_string(((Time::FramesCount/((float)Time::NowTime())/1000.0))));
-		GameController::curLevel->UI_mutex.unlock();
-
+	if (GameController::curLevel->ID >= 9) {		
 		for (int i = 0; i < GameController::curLevel->GameObjectInLevel.size(); i++) {
 			GameController::curLevel->GameObjectInLevel[i]->amt->UpdateAnimation();
 		}
 		
 		GameObject* player = GameObject::FindWithName("Player");
 		if (player != nullptr) {
-			if (Input::GetKey(0x57)) {
-				player->MoveBy(0, 0, -1);
-			}//w
-			if (Input::GetKey(0x53)) {
-				player->MoveBy(0, 0, 1);
-			}//s
-			if (Input::GetKey(0x41)) {
-				player->MoveBy(-1, 0, 0);
-			}//a
-			if (Input::GetKey(0x44)) {
-				player->MoveBy(1, 0, 0);
-			}//d
-			if (Input::GetKeyDown(0x43)) {
-				TcpClient::mRoom->curDungeon=(TcpClient::mRoom->curDungeon+1)%9;
-				TcpClient::mRoom->loadDungeon(TcpClient::mRoom->curDungeon);
-			}//c
+			PlayerGamePlayUpdate(player);
 		}
 		
 	}
@@ -206,5 +194,52 @@ void UpdateScreen() {
 	auto t3 = chrono::high_resolution_clock::now();
 	auto delta1 = chrono::duration<float>(t2 - t1).count();
 	auto delta2 = chrono::duration<float>(t3 - t2).count();
+}
+
+void PlayerGamePlayUpdate(GameObject* player) {
+	bool isWalk=false;
+	if (Input::GetKey(0x57)) {
+		player->MoveBy(0, 0, -1);
+		player->amt->ContinuePlay("walk");
+		isWalk = true;
+	}//w
+	if (Input::GetKey(0x53)) {
+		player->MoveBy(0, 0, 1);
+		isWalk = true;
+		player->amt->ContinuePlay("walk");
+	}//s
+	if (Input::GetKey(0x41)) {
+		player->MoveBy(-1, 0, 0);
+		player->direction = -1;
+		player->amt->ContinuePlay("walk");
+		isWalk = true;
+	}//a
+	if (Input::GetKey(0x44)) {
+		player->MoveBy(1, 0, 0);
+		player->direction = 1;
+		isWalk = true;
+		player->amt->ContinuePlay("walk");
+	}//d
+	if (player->amt->getCurrentState() == "walk" && !isWalk) {
+		player->amt->StartPlay("idle");
+	}
+	
+	if (Input::GetKeyDown(0x58)&&attackCd==0) {
+		/*player->MoveBy(0, 2, 0);
+		((UILabel*)GameController::AllLevels[9]->UIInLevel[0])->SetText(to_string(player->PosY));*/
+		/*TcpClient::SendMsg(9, 0, nullptr);
+		player->amt->StartPlay("jump");
+		
+		attackCd += Time::deltaTime;*/
+		player->amt->StartPlay("attack2");
+		attackCd += Time::deltaTime;
+	}//x attack
+	if (attackCd > 0) {
+		attackCd += Time::deltaTime;
+		if (attackCd >= 1) {
+			attackCd = 0;
+		}
+	}
+	
 }
 

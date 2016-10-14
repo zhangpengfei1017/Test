@@ -14,5 +14,7 @@ public:
 	int curDungeon;
 	Dungeon AllDungeons[9];
 	void loadDungeon(int id);
+
+	
 };
 

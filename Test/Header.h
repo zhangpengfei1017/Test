@@ -10,4 +10,5 @@ void Start();
 void Update();
 void UpdateScreen();
 void SetWindow();
+void PlayerGamePlayUpdate(GameObject* player);
 

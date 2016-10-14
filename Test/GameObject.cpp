@@ -41,6 +41,12 @@ GameObject::~GameObject()
 {
 }
 void GameObject::MoveTo(int x, int y, int z) {
+	if (this->PosX > x) {
+		Turn(-1);
+	}
+	else {
+		Turn(1);
+	}
 	this->PosX = x;
 	this->PosY = y;
 	this->PosZ = z;
@@ -51,6 +57,7 @@ void GameObject::MoveBy(int x, int y, int z) {
 	maxX = GameController::curLevel->LevelLength - minX-10;
 	this->PosX = this->PosX + x > minX ? this->PosX + x < maxX ? this->PosX + x : maxX : minX;
 	this->PosZ = this->PosZ+z<10?10: this->PosZ + z>130?130: this->PosZ + z;
+	this->PosY = this->PosY + y < 0 ? 0 : this->PosY + y;
 	if (this->PosX -ScreenGenerator::CamPosX< minX) {
 		ScreenGenerator::CamMove(x);
 	}
@@ -61,7 +68,14 @@ void GameObject::MoveBy(int x, int y, int z) {
 	TcpClient::SendMsg(8, 0, nullptr);
 
 }
-void GameObject::Turn() {}
+void GameObject::Turn(int dir) {
+	if (this->direction == dir) {
+		return;
+	}
+	else {
+		this->direction = dir;		
+	}
+}
 
 
 

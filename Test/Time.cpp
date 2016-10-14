@@ -17,7 +17,7 @@ void Time::init() {
 }
 bool Time::UpdateTime() {
 	if ((clock() - LastFrameTime) > 0) {
-		deltaTime = ((float)(clock() - LastFrameTime)) / 1000;
+		deltaTime = (((float)(clock() - LastFrameTime)) / 1000);
 		LastFrameTime = (int)clock();
 		FramesCount++;
 		FPS = ((float)(1 / deltaTime));
